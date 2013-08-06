@@ -54,7 +54,7 @@ add_action( 'after_setup_theme', '{%= prefix %}_setup' );
   */
 function {%= prefix %}_scripts_styles() {
 
-	$postfix = (  ) ? '' : '.min';
+	$postfix = ( {%= prefix %}_is_dev ) ? '' : '.min';
 
 	wp_enqueue_script( '{%= prefix %}', get_template_directory_uri() . "/assets/js/{%= js_safe_name %}{$postfix}.js", array(), {%= prefix_caps %}_VERSION, true );
 
