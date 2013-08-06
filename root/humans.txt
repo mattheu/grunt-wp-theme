@@ -3,15 +3,6 @@
 	Contact:   {%= author_email %}
 	URI:       {%= author_url %}
 
-/* THANKS */
-	Template Design: 10up
-	URI:             http://10up.com
-	Twitter:         @10up
-	
-	Template Design: Eric Mann
-	URI:             http://eamann.com
-	Twitter:         @ericmann
-	
-/* SITE */
+/* Theme */
 	Created:  {%= grunt.template.today("yyyy-mm-dd") %}
-	Template: https://github.com/10up/grunt-wp-theme
+	Template: https://github.com/mattheu/grunt-wp-theme
