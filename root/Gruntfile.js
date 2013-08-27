@@ -2,6 +2,8 @@ module.exports = function( grunt ) {
 
 	'use strict';
 
+	var banner = '/**\n * {%= title %}\n * {%= homepage %}\n *\n * Copyright (c) {%= grunt.template.today('yyyy') %} {%= author_name %}\n */\n';
+
 	// Load all grunt tasks
 	require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
@@ -10,156 +12,121 @@ module.exports = function( grunt ) {
 
 		pkg:    grunt.file.readJSON( 'package.json' ),
 
-		concat: {
-
-			options: {
-				stripBanners: true,
-				separator: '\n\n',
-				banner: '/*! <%= pkg.title %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
-					' * <%= pkg.homepage %>\n' +
-					' * Copyright (c) <%= grunt.template.today("yyyy") %>;' +
-					' */\n'
-			},
-
-			{%= js_safe_name %}: {
-				src: [
-					'assets/js/src/{%= js_safe_name %}.js'
-				],
-				dest: 'assets/js/{%= js_safe_name %}.js'
-			}
-
-		},
-
-		jshint: {
-
-			browser: {
-				all: [
-					'assets/js/src/**/*.js',
-					'assets/js/test/**/*.js'
-				],
-				options: {
-					jshintrc: '.jshintrc'
-				}
-			},
-
-			grunt: {
-				all: [
-					'Gruntfile.js'
-				],
-				options: {
-					jshintrc: '.gruntjshintrc'
-				}
-			}
-
-		},
-
+		// JS Minification & Concatenation
 		uglify: {
 
-			all: {
-
-				files: {
-					'assets/js/{%= js_safe_name %}.min.js': ['assets/js/{%= js_safe_name %}.js']
-				},
+			dev: {
 				options: {
-					banner: '/*! <%= pkg.title %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
-						' * <%= pkg.homepage %>\n' +
-						' * Copyright (c) <%= grunt.template.today("yyyy") %>;' +
-						' */\n',
-					mangle: {
-						except: ['jQuery']
-					}
+					preserveComments: true,
+					sourceMap: function( dest ) { return dest + '.map' },
+					sourceMappingURL: function( dest ) { return dest.replace(/^.*[\\\/]/, '') + '.map' },
+					sourceMapRoot: '/',
+					beautify: true
+				},
+				files: {
+					'assets/js/theme.js': ['assets/js/src/theme.js']
 				}
+			},
 
+			prod: {
+				options: {
+					preserveComments: false,
+					banner: banner,
+					mangle: { except: ['jQuery'] }
+				},
+				files: {
+					'assets/js/theme.min.js': ['assets/js/src/theme.js']
+				}
 			}
-		},
 
-		test:   {
-			files: ['assets/js/test/**/*.js']
 		},
 
 		{% if ('sass' === css_type) { %}
+		// Compile SASS
+		sass: {
 
-		sass:   {
-			all: {
+			compile: {
 				files: {
-					'assets/css/{%= js_safe_name %}.css': 'assets/css/sass/{%= js_safe_name %}.scss'
+					'assets/css/theme.css' : 'assets/css/sass/theme.scss'
 				}
 			}
+
 		},
 
-		{% } else if ('less' === css_type) { %}
-
-		less:   {
-			all: {
-				files: {
-					'assets/css/{%= js_safe_name %}.css': 'assets/css/less/{%= js_safe_name %}.less'
-				}
-			}
-		},
-
-		{% } %}
-
+		// Minify CSS
 		cssmin: {
 
-			options: {
-				banner: '/*! <%= pkg.title %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
-					' * <%= pkg.homepage %>\n' +
-					' * Copyright (c) <%= grunt.template.today("yyyy") %>;' +
-					' */\n'
-			},
+			theme: {
 
-			minify: {
-				expand: true,
-				{% if ('sass' === css_type || 'less' === css_type) { %}
-				cwd: 'assets/css/',
-				src: ['{%= js_safe_name %}.css'],
-				{% } else { %}
-				cwd: 'assets/css/src/',
-				src: ['{%= js_safe_name %}.css'],
-				{% } %}
-				dest: 'assets/css/',
-				ext: '.min.css'
+				options: {
+					banner: banner
+				},
+
+				files: {
+					'assets/css/theme.min.css': ['assets/css/theme.css']
+				}
+
 			}
 
 		},
+		{% } else if ('less' === css_type) { %}
+		less: {
 
+			dev: {
+				options: {
+					dumpLineNumbers: 'comments',
+					banner: banner
+				},
+				files: {
+					"assets/css/theme.css": "assets/css/less/theme.less"
+				}
+			},
+
+			prod: {
+				options: {
+					yuicompress: true,
+					banner: banner
+				},
+				files: {
+					"assets/css/theme.min.css": "assets/css/less/theme.less"
+				}
+			}
+
+		},
+		{% } else { %}
+		// Minify CSS
+		cssmin: {
+
+			theme: {
+
+				options: {
+					banner: '/**\n * {%= title %}\n * {%= homepage %}\n *\n * Copyright (c) {%= grunt.template.today('yyyy') %} {%= author_name %}\n */\n'
+				},
+
+				files: {
+					'assets/css/theme.min.css': ['assets/css/theme.css']
+				}
+
+			}
+
+		},
+		{% } %}
+
+		// Watch for changes
 		watch:  {
 
-			{% if ('sass' === css_type) { %}
-
 			sass: {
-				files: ['assets/css/sass/*.scss'],
+				files: ['assets/css/*/**/*.scss'],
 				tasks: ['sass', 'cssmin'],
 				options: {
-					debounceDelay: 500
+					debounceDelay: 500,
+					livereload: true
 				}
 			},
-
-			{% } else if ('less' === css_type) { %}
-
-			less: {
-				files: ['assets/css/less/*.less'],
-				tasks: ['less', 'cssmin'],
-				options: {
-					debounceDelay: 500
-				}
-			},
-
-			{% } else { %}
-
-			styles: {
-				files: ['assets/css/src/*.css'],
-				tasks: ['cssmin'],
-				options: {
-					debounceDelay: 500
-				}
-			},
-
-			{% } %}
 
 			scripts: {
-				files: ['assets/js/src/**/*.js', 'assets/js/vendor/**/*.js'],
-				tasks: ['jshint', 'concat', 'uglify'],
+				files: ['assets/js/*/**/*.js'],
+				tasks: ['uglify'],
 				options: {
 					debounceDelay: 500
 				}
@@ -170,11 +137,11 @@ module.exports = function( grunt ) {
 
 	// Default task.
 	{% if ('sass' === css_type) { %}
-	grunt.registerTask( 'default', ['jshint', 'concat', 'uglify', 'sass', 'cssmin'] );
+	grunt.registerTask( 'default', ['uglify', 'sass', 'cssmin'] );
 	{% } else if ('less' === css_type) { %}
-	grunt.registerTask( 'default', ['jshint', 'concat', 'uglify', 'less', 'cssmin'] );
+	grunt.registerTask( 'default', ['uglify', 'less', 'cssmin'] );
 	{% } else { %}
-	grunt.registerTask( 'default', ['jshint', 'concat', 'uglify', 'cssmin'] );
+	grunt.registerTask( 'default', ['uglify', 'cssmin'] );
 	{% } %}
 
 	grunt.util.linefeed = '\n';
