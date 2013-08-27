@@ -11,10 +11,6 @@
  * @package {%= title %}
  * @since 0.1.0
  */
-
-// Useful global constants
-define( '{%= prefix_caps %}_VERSION', '0.1.0' );
-
 /**
  * Check whether currently running a live or dev environment.
  *
@@ -27,6 +23,25 @@ function {%= prefix %}_is_dev() {
 }
 
 /**
+ * Get the theme version.
+ * Return version defined in style.css
+ *
+ * @return string version.
+ * @since 0.1.0
+ */
+function {%= prefix %}_get_theme_version() {
+
+	//  wp_get_theme since WordPress 3.4.0
+	if ( function_exists( 'wp_get_theme' ) ) {
+		$theme = wp_get_theme( basename( get_bloginfo( 'stylesheet_directory' ) ) );
+		$theme = wp_get_theme( $theme_name );
+		$version = $theme->version;
+	} else {
+		$theme = get_theme_data( get_bloginfo( 'stylesheet_directory' ) . '/style.css' );
+		$version = $theme['Version'];
+	}
+
+	return apply_filters( '{%= prefix %}_get_theme_version', $version );
 
 }
 add_action( 'after_setup_theme', '{%= prefix %}_setup' );
