@@ -44,27 +44,33 @@ function {%= prefix %}_get_theme_version() {
 	return apply_filters( '{%= prefix %}_get_theme_version', $version );
 
 }
-add_action( 'after_setup_theme', '{%= prefix %}_setup' );
 
- /**
-  * Enqueue scripts and styles for front-end.
-  *
-  * @since 0.1.0
-  */
+/**
+ * Enqueue scripts and styles for front-end.
+ *
+ * @since 0.1.0
+ */
 function {%= prefix %}_scripts_styles() {
 
-	$postfix = ( {%= prefix %}_is_dev ) ? '' : '.min';
+	$version = {%= prefix %}_get_theme_version();
+	$postfix = ( {%= prefix %}_is_dev() ) ? '' : '.min';
 
-	wp_enqueue_script( '{%= prefix %}', get_template_directory_uri() . "/assets/js/{%= js_safe_name %}{$postfix}.js", array(), {%= prefix_caps %}_VERSION, true );
+	wp_enqueue_script( '{%= prefix %}-theme', get_template_directory_uri() . "/assets/js/theme{$postfix}.js", array(), $version, true );
 
-	wp_enqueue_style( '{%= prefix %}', get_template_directory_uri() . "/assets/css/{%= js_safe_name %}{$postfix}.css", array(), {%= prefix_caps %}_VERSION );
+	wp_enqueue_style( '{%= prefix %}-theme', get_template_directory_uri() . "/assets/css/theme{$postfix}.css", array(), $version );
+
+	// Livereload. To use, run 'grunt watch'.
+	if ( {%= prefix %}_is_dev() ) {
+		wp_enqueue_script( '{%= prefix %}-livereload', home_url() . ':35729/livereload.js' ); // When running grunt watch inside vagrant.
+		// wp_enqueue_script( '{%= prefix %}-livereload', 'http://localhost:35729/livereload.js' ); // When running grunt watch on your machine.
+	}
 
 }
 add_action( 'wp_enqueue_scripts', '{%= prefix %}_scripts_styles' );
 
 /**
-* Add humans.txt to the <head> element.
-*/
+ * Add humans.txt to the <head> element.
+ */
 function {%= prefix %}_header_meta() {
 
 	$humans = '<link type="text/plain" rel="author" href="' . get_template_directory_uri() . '/humans.txt" />';
