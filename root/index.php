@@ -11,4 +11,18 @@ get_header();
 
 ?>
 
+<?php while ( have_posts() ) : ?>
+	
+	<?php 
+
+	the_post();
+
+	$template = ( 'post' === get_post_type() ) ? get_post_format() : get_post_type(); 
+	
+	get_template_part( 'index/single', $template ); 
+
+	?>
+
+<?php endwhile; ?>
+
 <?php get_footer(); ?>
