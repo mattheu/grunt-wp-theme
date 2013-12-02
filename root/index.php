@@ -19,7 +19,7 @@ get_header();
 
 	$template = ( 'post' === get_post_type() ) ? get_post_format() : get_post_type(); 
 	
-	get_template_part( 'index/single', $template ); 
+	get_template_part( 'parts/index/single', $template ); 
 
 	?>
 
